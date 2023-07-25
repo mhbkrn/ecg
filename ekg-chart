@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://code.highcharts.com/8.0/highcharts.js"></script>
+  <style>
+    body {
+      min-width: 500px;
+      max-width: 1000px;
+      height: 400px;
+      margin: 0 auto;
+    }
+    h2 {
+      font-family: Arial;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>ESP32 Weather Station Chart</h2>
+  <div id="ekg-chart" class="container"></div>
+</body>
+<script>
+  var chartEKG = new Highcharts.Chart({
+    chart:{ renderTo:'ekg-chart' },
+    title: { text: 'EKG (%)' },
+    series: [{
+      showInLegend: false,
+      data: []
+    }],
+    plotOptions: {
+      line: { animation: false, dataLabels: { enabled: false } },
+      series: { color: '#18009c' }
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: { second: '%H:%M:%S' }
+    },
+    yAxis: {
+      title: { text: 'EKG (%)' }
+    },
+    credits: { enabled: false }
+  });
+
+  setInterval(function() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+        var x = (new Date()).getTime(),
+        y = parseFloat(this.responseText);
+        if (chartEKG.series[0].data.length > 70) {
+          chartEKG.series[0].addPoint([x, y], true, true, true);
+        } else {
+          chartEKG.series[0].addPoint([x, y], true, false, true);
+        }
+      }
+    };
+    xhttp.open("GET", "/ecg", true);
+    xhttp.send();
+  }, 600);
+</script>
+</html>
